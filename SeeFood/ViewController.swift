@@ -38,7 +38,12 @@ class ViewController: UIViewController {
             guard let results = request.results as? [VNClassificationObservation] else {
                 fatalError("Failed to proccess request results")
             }
-            print(results)
+            
+            if results.first?.identifier.contains("hotdog") != false {
+                self.navigationItem.title = "Hotdog!"
+            } else {
+                self.navigationItem.title = "NOT hotdog!"
+            }
         }
         
         let handler = VNImageRequestHandler(ciImage: ciImage)
