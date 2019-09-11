@@ -25,14 +25,39 @@ class ViewController: UIViewController {
     @IBAction func cameraBarButtonAction(_ sender: UIBarButtonItem) {
         present(imagePickerController, animated: true, completion: nil)
     }
+    
+    private func detect(image: UIImage) {
+        guard
+            let ciImage = CIImage(image: image),
+            let model = try? VNCoreMLModel(for: Inceptionv3().model)
+        else {
+            fatalError("Could not convert picked image to CIImage")
+        }
+        
+        let request = VNCoreMLRequest(model: model) { request, error in
+            guard let results = request.results as? [VNClassificationObservation] else {
+                fatalError("Failed to proccess request results")
+            }
+            print(results)
+        }
+        
+        let handler = VNImageRequestHandler(ciImage: ciImage)
+        do {
+            try handler.perform([request])
+        }
+        catch {
+            print(error)
+        }
+    }
 }
 
 extension ViewController: UIImagePickerControllerDelegate {
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         
-         let pickedImage = info[.originalImage] as? UIImage
+        guard let pickedImage = info[.originalImage] as? UIImage else { return }
         resultImageView.image = pickedImage
+        detect(image: pickedImage)
         picker.dismiss(animated: true, completion: nil)
     }
 }
